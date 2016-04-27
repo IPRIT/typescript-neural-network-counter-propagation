@@ -34,14 +34,14 @@ export class CounterPropagationNetwork implements IComputable {
       this.grossbergLayer.learn(kohonenOutput, xi, this.beta, inputs[inputIndex]);
     });
 
-    let alphaVelocity = 0.001;
+    let alphaVelocity = 0.01;
     let minAlpha = 0.1;
     this.alpha = Math.max(minAlpha, this.alpha - alphaVelocity);
 
-    let learningVelocity = 0.001;
+    let learningVelocity = 0.01;
     this.learningRate = Math.min(this.learningRate + learningVelocity, 1);
 
-    let minBeta = 0.01;
+    let minBeta = 0.1;
     let betaVelocity = 0.001;
     this.beta = Math.max(minBeta, this.beta - betaVelocity);
   }

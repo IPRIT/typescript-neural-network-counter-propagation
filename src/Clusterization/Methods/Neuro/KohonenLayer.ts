@@ -57,6 +57,8 @@ export class KohonenLayer implements IComputable {
   }
 
   private convexTransform(xi: number[], learningRate: number) {
+    //todo(): to be or not to be
+    return xi;
     let offset = (1 - learningRate) / Math.sqrt(xi.length);
     return xi.map((x, i) => learningRate * x + offset);
   }
