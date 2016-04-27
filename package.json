@@ -1,0 +1,35 @@
+{
+  "name": "typescript-k-means",
+  "version": "1.0.0",
+  "description": "K-means method written on ES2015/TypeScript: (Clusterization)",
+  "scripts": {
+    "install": "npm i -g tsd bower tsc && tsd install && npm i && bower i",
+    "start": "tsc && node app.js --harmony"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IPRIT/typescript-deep-neural-network.git"
+  },
+  "keywords": [
+    "neural",
+    "kmeans",
+    "k-means",
+    "es6",
+    "es2015",
+    "typescript"
+  ],
+  "author": "Alexander Belov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IPRIT/typescript-k-means/issues"
+  },
+  "homepage": "https://github.com/IPRIT/typescript-k-means#readme",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "colors": "^1.1.2",
+    "express": "^4.13.4",
+    "jade": "^1.11.0",
+    "morgan": "^1.7.0",
+    "seedrandom": "^2.4.2"
+  }
+}

@@ -1,0 +1,10 @@
+div(style='width: 100%; height: 100%; overflow: hidden;')
+  md-content.md-padding
+    p Для начала выберите количество центроидов (Поставлено точек: {{clickedPoints.length}}).
+    div
+      md-input-container
+        input(type='number', step='1', ng-change='changeCentroids(centroids)', ng-model='centroids', min='1', placeholder='Количество центроидов', ng-disabled='isComputing')
+      md-input-container(style='margin-left: 18px;')
+        md-checkbox(ng-model="immediately" aria-label="Immediately", ng-disabled='isComputing') Посчитать мгновенно
+
+  canvas.clusters-canvas(width='100%', height='100%')
