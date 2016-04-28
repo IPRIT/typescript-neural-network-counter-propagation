@@ -1,11 +1,15 @@
 import {IComputable} from "./IComputable";
 import {KohonenLayer} from "./KohonenLayer";
 import {GrossbergLayer} from "./GrossbergLayer";
+import {IMetricStrategy, EuclideanMetric, EuclideanSquareMetric} from "../../Metrics/Metrics";
+import {IPoint} from "../../Clasterization";
+import {COUNTER_PROPAGATION_CONF} from "../../../config";
 
 export class CounterPropagationNetwork implements IComputable {
 
   kohonenLayer: KohonenLayer;
   grossbergLayer: GrossbergLayer;
+  inputs: number[][];
 
   learningRate: number = 0.1; // используется для инициализации весов нейронов слоя Кохонена
   alpha: number = 0.7; // скорость обучения слоя Кохонена (каждого нейрона слоя Кохонена)
@@ -22,6 +26,7 @@ export class CounterPropagationNetwork implements IComputable {
   }
 
   learn(inputs: number[][]) {
+    this.inputs = inputs;
     let normalized = this.normalize(inputs);
     this.kohonenLayer.neurons.forEach(n => n.wins = 0);
     this.kohonenLayer.threshold = Math.floor(inputs.length / this.kohonenLayer.neurons.length);
@@ -34,15 +39,16 @@ export class CounterPropagationNetwork implements IComputable {
       this.grossbergLayer.learn(kohonenOutput, xi, this.beta, inputs[inputIndex]);
     });
 
-    let alphaVelocity = 0.01;
-    let minAlpha = 0.1;
+    let conf = COUNTER_PROPAGATION_CONF;
+    let alphaVelocity = conf.alpha.velocity;
+    let minAlpha = conf.alpha.min;
     this.alpha = Math.max(minAlpha, this.alpha - alphaVelocity);
 
-    let learningVelocity = 0.01;
+    let learningVelocity = conf.learningRateVelocity;
     this.learningRate = Math.min(this.learningRate + learningVelocity, 1);
 
-    let minBeta = 0.1;
-    let betaVelocity = 0.001;
+    let minBeta = conf.beta.min;
+    let betaVelocity = conf.beta.velocity;
     this.beta = Math.max(minBeta, this.beta - betaVelocity);
   }
 
@@ -63,6 +69,67 @@ export class CounterPropagationNetwork implements IComputable {
       return xi.map((x, i) => {
         return x / hypot(...xi);
       });
+    });
+  }
+
+  getCentroids(): IPoint[] {
+    let container = [];
+    for (let i = 0; i < this.kohonenLayer.neurons.length; ++i) {
+      let arr = [];
+      for (let j = 0; j < this.grossbergLayer.neurons.length; ++j) {
+        arr.push(this.grossbergLayer.neurons[j].weights[i]);
+      }
+      container.push(arr);
+    }
+    return container.map(point => {
+      return {
+        coords: point
+      }
+    });
+  }
+
+  getClusters() {
+    let points = this.inputs.map(point => {
+      return {
+        coords: point
+      }
+    });
+    let centroids = this.getCentroids();
+    let metric = new EuclideanSquareMetric();
+    return this.getClosestGroups(centroids, points, metric);
+  }
+
+  private getClosestCentroid(point: IPoint, centroids: IPoint[], metric: IMetricStrategy): IPoint {
+    let dists = centroids.map((centroid, centroidIndex) => {
+      return {
+        centroid,
+        distance: metric.distance(centroid, point)
+      };
+    });
+
+    let minIndex = dists.reduce((prevMemIndex, dist, distIndex) => {
+      if (prevMemIndex === -1) return 0;
+      return dists[prevMemIndex].distance > dist.distance ?
+        distIndex : prevMemIndex;
+    }, -1);
+
+    return dists[minIndex].centroid;
+  }
+
+  private getClosestGroups(centroids: IPoint[], points: IPoint[], metric: IMetricStrategy) {
+    let groupsMap = {};
+    centroids.forEach((x, i) => {
+      groupsMap['c' + i] = [];
+    });
+    points.forEach((point, pointIndex) => {
+      let centroid = this.getClosestCentroid(point, centroids, metric);
+      groupsMap['c' + centroids.indexOf(centroid)].push( point );
+    });
+    return centroids.map((centroid, i) => {
+      return {
+        centroid,
+        group: groupsMap['c' + i]
+      };
     });
   }
 }

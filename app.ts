@@ -1,4 +1,4 @@
-import {TestDataProvider, IrisDataProvider, IDataProvider, DataType} from "./src/Data/DataProvider";
+import {TestDataProvider, IrisDataProvider, IDataProvider, DataType, StarsDataProvider} from "./src/Data/DataProvider";
 import {DataMixer} from "./src/Data/DataMixer";
 import {DataNormalizer} from "./src/Data/DataNormalizer";
 import * as View from "./frontend/app";
@@ -24,6 +24,9 @@ switch (inputConfig.dataType) {
   case DataType.IRIS:
     dataProvider = new IrisDataProvider();
     break;
+  case DataType.STARS:
+    dataProvider = new StarsDataProvider();
+    break;
   default:
     dataProvider = new TestDataProvider();
 }
@@ -36,7 +39,8 @@ if (outputConfig.showClusters) {
 function onAction(ev: any, callback: Function = ()=>{}) {
   let actions = {
     kmeans,
-    counterPropagationNetwork
+    cpn,
+    cpn_centroids
   };
   if (ev && ev.type in actions) {
     actions[ev.type](ev.data, callback);
@@ -62,8 +66,20 @@ function kmeans(params, callback) {
 
 /* Counter propagation network */
 
+function cpn(params, callback) {
+  callback(null, {
+    groups: counterPropagationNetwork.getClusters()
+  });
+}
+
+function cpn_centroids(params, callback) {
+  callback(null, {
+    groups: counterPropagationNetwork.getCentroids()
+  });
+}
+
 let counterPropConfig = Config.COUNTER_PROPAGATION_CONF;
-let points = dataProvider.getInput();
+let points = dataProvider.getInput().slice(0, -1);
 
 // initializing
 counterPropagationNetwork = new CounterPropagationNetwork(counterPropConfig.kohonenNeurons, Config.CLASSES_CONF.classDimension);
@@ -78,15 +94,7 @@ for (let epoch = 0; epoch < counterPropConfig.maxIterations; ++epoch) {
   counterPropagationNetwork.learn(points);
 }
 
-let container = [];
-for (let i = 0; i < counterPropagationNetwork.kohonenLayer.neurons.length; ++i) {
-  let arr = [];
-  for (let j = 0; j < counterPropagationNetwork.grossbergLayer.neurons.length; ++j) {
-    arr.push(counterPropagationNetwork.grossbergLayer.neurons[j].weights[i]);
-  }
-  container.push(arr);
-}
-console.log(container);
+console.log(counterPropagationNetwork.getCentroids());
 
 let a = 1;
 

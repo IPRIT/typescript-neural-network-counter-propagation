@@ -13,7 +13,8 @@ export interface IDataProvider {
 
 export enum DataType {
   GENERATE,
-  IRIS
+  IRIS,
+  STARS
 }
 
 export class TestDataProvider implements IDataProvider {
@@ -106,6 +107,38 @@ export class IrisDataProvider implements IDataProvider {
     let isWin = /^win/.test(process.platform);
     //todo(me): fix when a file will be correctly line-break.
     let splitChars = isWin && false ? '\n' : '\n';
+    this.data = data.split(splitChars).map(line => {
+      return line.trim().split(/\s/).map(parseFloat);
+    });
+  }
+}
+
+export class StarsDataProvider implements IDataProvider {
+
+  outputs: number[] = [];
+  public data: any;
+  private isInit: boolean = false;
+
+  getInput() {
+    if (!this.isInit) {
+      this.initialize();
+    }
+    return <number[][]>this.data;
+  }
+
+  getOutput() {
+    throw new Error('Not implemented');
+    return <any>[];
+  }
+
+  initialize() {
+    this.isInit = true;
+    //noinspection TypeScriptUnresolvedFunction
+    let data = fs.readFileSync('./src/Data/input/stars.txt', 'utf8');
+    //noinspection TypeScriptUnresolvedVariable
+    let isWin = /^win/.test(process.platform);
+    //todo(me): fix when a file will be correctly line-break.
+    let splitChars = isWin && false ? '\r\n' : '\n';
     this.data = data.split(splitChars).map(line => {
       return line.trim().split(/\s/).map(parseFloat);
     });

@@ -10,6 +10,12 @@ angular.module('Neuro.services', [])
             });
         }
 
+        function getCpn() {
+            return $http.get('/computeCpn').then(function (response) {
+                return response.data;
+            });
+        }
+
         function getPoints() {
             return $http.get('/getPoints').then(function (response) {
                 return response.data;
@@ -28,11 +34,19 @@ angular.module('Neuro.services', [])
             });
         }
 
+        function getCpnCentroids() {
+            return $http.get('/getCpnCentroids').then(function (response) {
+                return response.data;
+            });
+        }
+
         return {
             getClusters: getClusters,
             getPoints: getPoints,
             getSettings: getSettings,
-            computeKmeans: computeKmeans
+            computeKmeans: computeKmeans,
+            getCpn: getCpn,
+            getCpnCentroids: getCpnCentroids
         }
     }])
 ;

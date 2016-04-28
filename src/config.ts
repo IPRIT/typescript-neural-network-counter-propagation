@@ -10,7 +10,7 @@ export const CLASSES_CONF = {
 };
 
 export const INPUT_DATA_CONF = {
-  dataType: 0 //0 - generate, 1 - Iris flower data set
+  dataType: 2 //0 - generate, 1 - Iris flower data set, 2 - Stars
 };
 
 export const OUTPUT_DATA_CONF = {
@@ -24,6 +24,19 @@ export const KMEANS_CONF = {
 };
 
 export const COUNTER_PROPAGATION_CONF = {
-  kohonenNeurons: 5,
-  maxIterations: 5000
+  kohonenNeurons: 8,
+  maxIterations: 1000,
+  metric: 1, // 0 - scalar, 1 - euclidean, 2 - euclidean squared
+  initPassOrigin: true,
+  alpha: { /* значение alpha регулирует скорость изменения векторов слоя Кохонена. Начальное значение обычно берут 0.7 */
+    min: 0.1,
+    velocity: 0.01
+  },
+  beta: { /* значение beta регулирует скорость обучения слоя Гроссберга. Скорость изменения векторов слоя. Начальн. ~0.1 */
+    min: 0.0001,
+    velocity: 0.01
+  },
+  /* Необходимо для метода выпуклой комбинации - постепенно возрастает до 1 */
+  /* Используется для постепенного расширения кластеров */
+  learningRateVelocity: 0.001
 };

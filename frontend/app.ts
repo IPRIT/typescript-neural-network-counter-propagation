@@ -81,6 +81,30 @@ function runServerInstance() {
     });
   });
 
+  app.get('/computeCpn', function (req, res) {
+    onAction({
+      type: 'cpn',
+      data: {}
+    }, (err, result) => {
+      if (err) {
+        return res.json({ error: err.toString() });
+      }
+      res.json({ result });
+    });
+  });
+
+  app.get('/getCpnCentroids', function (req, res) {
+    onAction({
+      type: 'cpn_centroids',
+      data: {}
+    }, (err, result) => {
+      if (err) {
+        return res.json({ error: err.toString() });
+      }
+      res.json({ result });
+    });
+  });
+
   app.all('/*', function(req, res, next) {
     // Just send the index.jade for other files to support html5 mode in angular routing
     res.render('index/index');

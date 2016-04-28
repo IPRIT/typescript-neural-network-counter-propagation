@@ -1,5 +1,6 @@
 import {IComputable} from "./IComputable";
 import {KohonenNeuron} from "./KohonenNeuron";
+import {COUNTER_PROPAGATION_CONF} from "../../../config";
 
 export class KohonenLayer implements IComputable {
 
@@ -20,10 +21,17 @@ export class KohonenLayer implements IComputable {
     var net = this.neurons.map((neuron, i) => {
       return neuron.compute(vector);
     });
-    let winnerIndex = 0, winnerValue = -1e9;
+    let winnerIndex = 0, winnerValue = 1e9;
+    let conf = COUNTER_PROPAGATION_CONF;
+    if (conf.metric === 0) {
+      winnerValue = -1e9;
+    } else {
+      winnerValue = 1e9;
+    }
     net.forEach((value, i) => {
       // чувство справедливости
-      if (winnerValue < value /*&& this.neurons[i].wins < this.threshold*/) {
+      let condition = conf.metric > 0 ? winnerValue > value : winnerValue < value;
+      if (condition /*&& this.neurons[i].wins < this.threshold*/) {
         winnerIndex = i;
         winnerValue = value;
       }
@@ -58,7 +66,9 @@ export class KohonenLayer implements IComputable {
 
   private convexTransform(xi: number[], learningRate: number) {
     //todo(): to be or not to be
-    return xi;
+    if (COUNTER_PROPAGATION_CONF.initPassOrigin) {
+      return xi;
+    }
     let offset = (1 - learningRate) / Math.sqrt(xi.length);
     return xi.map((x, i) => learningRate * x + offset);
   }

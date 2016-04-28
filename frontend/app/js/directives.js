@@ -15,6 +15,23 @@ angular.module('Neuro.directives', [])
                     render();
                 }, 800);
 
+                var imageNumber = 4;
+                var sizes = [
+                    [1920, 1200],
+                    [850, 638],
+                    [1024, 496],
+                    [649, 418],
+                    [1920, 1200],
+                    [3247, 2066],
+                    [600, 643],
+                    [2000, 1333],
+                    [1920, 1200],
+                    [1112, 706]
+                ];
+                var imageWidth = sizes[imageNumber - 1][0],
+                    imageHeight = sizes[imageNumber - 1][1],
+                    imageSrc = 'img/' + imageNumber + '.png';
+
                 var canvas = element.find('canvas').get(0);
                 if (!canvas) {
                     return;
@@ -29,9 +46,11 @@ angular.module('Neuro.directives', [])
                 ctx.shadowOffsetY = 1;
 
                 function render() {
-                    var points = scope.points,
+                    var groups = scope.clusters.result,
                         settings = scope.settings.CLASSES_CONF;
-                    drawPoints(points, settings);
+                    drawImage(imageSrc, settings, function () {
+                        drawGroups(groups.groups, settings);
+                    });
                 }
 
                 function drawPoints(points, settings) {
@@ -67,14 +86,29 @@ angular.module('Neuro.directives', [])
                         ctx.shadowBlur = 5;
                         ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + "," + Math.max(alpha - 0.2, 0.4) + ")";
 
-                        var x = point.coords[0],
-                            y = point.coords[1];
+                        var x = point[0],
+                            y = point[1];
                         ctx.beginPath();
                         ctx.arc(x, y, 3, -2 * Math.PI, 2 * Math.PI, true);
                         ctx.fill();
                         ctx.save();
                         ctx.restore();
                     });
+                }
+
+                var compressKoeff = 1;
+                function drawImage(src, settings, cb) {
+                    var borders = {
+                        min: settings.minBoundary - settings.minDistanceBetween,
+                        max: settings.maxBoundary + settings.minDistanceBetween
+                    };
+                    compressKoeff = (borders.max - borders.min) / imageWidth;
+                    var pic = new Image();
+                    pic.src = src;
+                    pic.onload = function() {
+                        ctx.drawImage(pic, 10, 10, borders.max - borders.min, imageHeight / imageWidth * (borders.max - borders.min));
+                        cb();
+                    };
                 }
 
                 function drawClickedPoints(points) {
@@ -145,7 +179,7 @@ angular.module('Neuro.directives', [])
                 }
 
                 function drawGroups(groups, settings) {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    //ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                     var borders = {
                         min: settings.minBoundary - settings.minDistanceBetween,
@@ -168,41 +202,31 @@ angular.module('Neuro.directives', [])
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 1;
                     ctx.shadowBlur = 5;
-                    var pointRadius = 3;
+                    var pointRadius = 4;
 
                     groups.forEach((cluster, index) => {
                         var points = cluster.group;
-                        var moves = cluster.allMoves;
-                        var rndWithSeed = new Math.seedrandom(index + 'a');
+                        var moves = [];
+                        var rndWithSeed = new Math.seedrandom(index + 'b');
                         var r = Math.ceil(rndWithSeed() * 255);
                         var g = Math.ceil(rndWithSeed() * 255);
                         var b = Math.ceil(rndWithSeed() * 255);
                         var alpha = rndWithSeed();
-                        alpha = alpha < 0.5 ? alpha + 0.5 : alpha;
-                        ctx.shadowBlur = 5;
+                        alpha = 0.6;
+                        ctx.shadowBlur = 7;
                         ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + "," + alpha + ")";
 
+                        var centroid = transformPoint(cluster.centroid);
+                        ctx.beginPath();
+                        ctx.arc(centroid.coords[0] - pointRadius/2, centroid.coords[1] - pointRadius/2, pointRadius * 2, -2 * Math.PI, 2 * Math.PI, true);
+                        ctx.fill();
+
                         points.forEach(function (point, index) {
+                            point = transformPoint(point);
                             ctx.beginPath();
                             ctx.arc(point.coords[0] - pointRadius/2, point.coords[1] - pointRadius/2, pointRadius, -2 * Math.PI, 2 * Math.PI, true);
                             ctx.fill();
                         });
-
-                        if (moves.length >= 2) {
-                            ctx.strokeStyle = "rgba(0,0,0,0.45)";
-                            ctx.shadowColor = "rgba(" + r + ", " + g + ", " + b + "," + 1 + ")";
-                            ctx.shadowOffsetX = 0;
-                            ctx.shadowOffsetY = 1;
-                            ctx.shadowBlur = 15;
-                            ctx.lineWidth = 5;
-                            ctx.beginPath();
-                            ctx.moveTo(moves[0].coords[0], moves[0].coords[1]);
-                            moves.forEach(function (move, moveIndex) {
-                                if (!moveIndex) return;
-                                ctx.lineTo(move.coords[0], move.coords[1]);
-                            });
-                            ctx.stroke();
-                        }
                     });
                 }
 
@@ -233,6 +257,20 @@ angular.module('Neuro.directives', [])
                         ctx.beginPath();
                         ctx.arc(point.coords[0] - pointRadius/2, point.coords[1] - pointRadius/2, pointRadius, -2 * Math.PI, 2 * Math.PI, true);
                         ctx.fill();
+                    });
+                }
+
+                function transformPoint(point) {
+                    var offset = 10;
+                    if (point.coords) {
+                        return {
+                            coords: point.coords.map(function (component) {
+                                return component * compressKoeff + offset;
+                            })
+                        }
+                    }
+                    return point.map(function (component) {
+                        return component * compressKoeff + offset;
                     });
                 }
             }

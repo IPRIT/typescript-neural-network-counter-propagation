@@ -24,7 +24,7 @@ angular.module('Neuro.controllers', [])
         $scope.immediately = false;
         $scope.isComputing = false;
         
-        ApiService.getClusters().then(function (data) {
+        ApiService.getCpn().then(function (data) {
             console.log('Clusters:', data);
             $scope.clusters = data;
         });
