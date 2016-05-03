@@ -122,7 +122,7 @@ angular.module('Neuro.directives', [])
                     var pointRadius = 5;
 
                     points.forEach(function (point, index) {
-                        var rndWithSeed = new Math.seedrandom(index + 'a');
+                        var rndWithSeed = new Math.seedrandom(index + 'b');
                         var r = Math.ceil(rndWithSeed() * 255);
                         var g = Math.ceil(rndWithSeed() * 255);
                         var b = Math.ceil(rndWithSeed() * 255);
@@ -207,7 +207,7 @@ angular.module('Neuro.directives', [])
                     groups.forEach((cluster, index) => {
                         var points = cluster.group;
                         var moves = [];
-                        var rndWithSeed = new Math.seedrandom(index + 'b');
+                        var rndWithSeed = new Math.seedrandom(index + 'dddddddaaa');
                         var r = Math.ceil(rndWithSeed() * 255);
                         var g = Math.ceil(rndWithSeed() * 255);
                         var b = Math.ceil(rndWithSeed() * 255);

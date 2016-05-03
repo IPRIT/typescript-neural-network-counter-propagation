@@ -4,6 +4,7 @@ import {GrossbergLayer} from "./GrossbergLayer";
 import {IMetricStrategy, EuclideanMetric, EuclideanSquareMetric} from "../../Metrics/Metrics";
 import {IPoint} from "../../Clasterization";
 import {COUNTER_PROPAGATION_CONF} from "../../../config";
+import {RsIndex} from "../../Check/RsIndex";
 
 export class CounterPropagationNetwork implements IComputable {
 
@@ -96,7 +97,14 @@ export class CounterPropagationNetwork implements IComputable {
     });
     let centroids = this.getCentroids();
     let metric = new EuclideanSquareMetric();
-    return this.getClosestGroups(centroids, points, metric);
+    let clusters = this.getClosestGroups(centroids, points, metric);
+    let rsIndex = new RsIndex(clusters.map((group, groupIndex) => {
+      return {
+        points: group.group
+      }
+    }), metric);
+    console.log(`Rs index:`, rsIndex.compute());
+    return clusters;
   }
 
   private getClosestCentroid(point: IPoint, centroids: IPoint[], metric: IMetricStrategy): IPoint {
